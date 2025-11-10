@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<meta http-equiv="X-Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D 메쉬 커팅 시스템 - Three.js + Matter.js</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .tech-badge {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.matter {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .badge.d2 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .instructions {
+            background: #fff4e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .instructions h3 {
+            color: #4facfe;
+            margin-bottom: 8px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .comparison {
+            background: #e7f5ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #339af0;
+        }
+
+        .comparison h3 {
+            color: #339af0;
+            margin-bottom: 8px;
+        }
+
+        .comparison ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .canvas-container {
+            position: relative;
+            border: 3px solid #4facfe;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 20px;
+            height: 700px;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-reset {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #00f2fe;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-load {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-load:hover {
+            background: #40c057;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-wireframe {
+            background: #845ef7;
+            color: white;
+        }
+
+        .btn-wireframe:hover {
+            background: #7048e8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-wireframe.active {
+            background: #5f3dc4;
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-camera {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-camera:hover {
+            background: #ee5a52;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-clear {
+            background: #fa5252;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #e03131;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .shape-selector {
+            margin-bottom: 15px;
+        }
+
+        .shape-selector label {
+            margin-right: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .shape-selector select {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 2px solid #4facfe;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 8px;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .info.drawing {
+            background: #fff3bf;
+            color: #856404;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4facfe20 0%, #00f2fe20 100%);
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #4facfe40;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔪 완벽한 2D 메쉬 커팅 시스템 (Matter.js)</h1>
+        
+        <div class="tech-badge">
+            <span class="badge">WebGL</span>
+            <span class="badge">Three.js r150+</span>
+            <span class="badge matter">⚡ Matter.js 2D Physics</span>
+            <span class="badge d2">✨ 완벽한 2D</span>
+        </div>
+
+        <div class="comparison">
+            <h3>✨ Matter.js의 장점 (vs Cannon.js):</h3>
+            <ul>
+                <li>🎯 <strong>순수 2D 물리 엔진</strong> - 3D 오버헤드 없음!</li>
+                <li>📐 <strong>OrthographicCamera</strong> - 완벽한 2D 평면 뷰</li>
+                <li>🎮 <strong>정확한 2D 절단</strong> - 카메라 무빙과 무관</li>
+                <li>⚡ <strong>더 빠른 성능</strong> - 불필요한 Z축 계산 제거</li>
+                <li>🔧 <strong>2D 전용 API</strong> - 폴리곤 절단에 최적화</li>
+                <li>💫 <strong>자연스러운 2D 회전</strong> - Z축 회전만 발생</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h3>🎮 사용 방법 (완벽한 2D!):</h3>
+            <ol>
+                <li>✏️ <strong>좌클릭 드래그</strong>로 절단선을 그으세요</li>
+                <li>🖱️ <strong>우클릭 드래그</strong>로 카메라를 이동할 수 있습니다</li>
+                <li>🔍 <strong>마우스 휠</strong>로 줌 인/아웃</li>
+                <li>🎯 정확한 2D 평면에서 절단 (카메라 각도 걱정 없음!)</li>
+                <li>📏 시작점과 끝점을 잇는 직선을 기준으로 메쉬가 분할됩니다</li>
+                <li>🌟 녹색(시작) → 빨간색(끝) 점으로 절단선 표시</li>
+                <li>💥 분할된 메쉬는 Matter.js 2D 물리로 자연스럽게 날아갑니다</li>
+            </ol>
+            <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                🚀 <strong>Matter.js 2D 물리 엔진:</strong> 정확한 2D 중력, 충돌, 반발!<br>
+                📐 <strong>완벽한 2D 환경:</strong> Z축 걱정 없는 진짜 2D 평면!<br>
+                🖱️ <strong>카메라 조작:</strong> 우클릭 드래그로 이동, 휠로 줌!
+            </p>
+        </div>
+
+        <div class="shape-selector">
+            <label for="shapeSelect">테스트 도형 선택:</label>
+            <select id="shapeSelect">
+                <option value="leaf">🍃 나뭇잎 (SVG)</option>
+                <option value="ham">🍖 햄 (OBJ)</option>
+                <option value="triangle">🔺 삼각형</option>
+                <option value="square">🟦 사각형</option>
+                <option value="pentagon">⬟ 오각형</option>
+                <option value="circle">⭕ 원</option>
+                <!-- 🚨 [사용자 OBJ 파일 옵션 주석 처리] -->
+                <!-- <option value="custom">📁 사용자 OBJ 파일</option> -->
+            </select>
+        </div>
+
+        <!-- 🚨 [사용자 OBJ 파일 업로드 섹션 주석 처리] -->
+        <!-- <div class="shape-selector" id="customObjSection" style="display: none; margin-top: 15px; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 2px dashed #4facfe;">
+            <h4 style="margin: 0 0 10px 0; color: #4facfe;">📁 사용자 OBJ 파일 업로드</h4>
+            <div style="margin-bottom: 10px;">
+                <label for="objFile" style="display: block; margin-bottom: 5px; font-weight: 600;">🔷 OBJ 파일:</label>
+                <input type="file" id="objFile" accept=".obj" style="padding: 5px; width: 100%;">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="textureFile" style="display: block; margin-bottom: 5px; font-weight: 600;">🎨 텍스처 파일 (선택):</label>
+                <input type="file" id="textureFile" accept=".png,.jpg,.jpeg" style="padding: 5px; width: 100%;">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="objScale" style="display: block; margin-bottom: 5px; font-weight: 600;">📏 크기 조절:</label>
+                <input type="range" id="objScale" min="50" max="500" value="200" step="10" style="width: 80%;">
+                <span id="scaleValue" style="margin-left: 10px; font-weight: bold;">200</span>
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
+                💡 OBJ 파일을 선택하고 "도형 불러오기" 버튼을 클릭하세요.
+            </p>
+        </div> -->
+
+        <div class="shape-selector" style="margin-top: 15px;">
+            <label for="vertexQuality">물리 정점 품질 (정확도 vs 성능):</label>
+            <select id="vertexQuality" onchange="updateVertexQuality()">
+                <option value="80">⚡ 빠름 (80개 정점, 40% 정확도, 60fps)</option>
+                <option value="150">⚖️ 균형 (150개 정점, 75% 정확도, 45-50fps)</option>
+                <option value="200">🎯 정밀 (200개 정점, 100% 정확도, 30-40fps)</option>
+            </select>
+        </div>
+
+        <div class="shape-selector" style="margin-top: 10px;">
+            <label for="speedSlider">시뮬레이션 속도:</label>
+            <input type="range" id="speedSlider" min="0.2" max="1.5" step="0.05" value="1.0" onchange="updateSimulationSpeed()" oninput="updateSimulationSpeed(true)" style="vertical-align: middle; width: 60%;">
+            <span id="speedValue" style="margin-left: 10px; font-weight: 700;">1.00x</span>
+        </div>
+
+        <div class="shape-selector" style="margin-top: 6px;">
+            <label for="cutForceSlider">절단 분리 속도(힘):</label>
+            <input type="range" id="cutForceSlider" min="0.2" max="3.0" step="0.1" value="1.0" onchange="updateCutForceScale()" oninput="updateCutForceScale(true)" style="vertical-align: middle; width: 60%;">
+            <span id="cutForceValue" style="margin-left: 10px; font-weight: 700;">1.0x</span>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading" class="loading">
+                <div style="font-size: 24px; margin-bottom: 10px;">⚡ 로딩 중...</div>
+                <div id="loadingProgress" style="font-size: 14px;">Matter.js + Three.js 로드 중...</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-reset" onclick="resetScene()">씬 초기화</button>
+            <button class="btn-load" onclick="loadSelectedShape()">도형 불러오기</button>
+            <button class="btn-clear" onclick="clearAllMeshes()">모든 도형 제거</button>
+            <button class="btn-wireframe" onclick="toggleWireframe()">와이어프레임</button>
+            <button class="btn-camera" onclick="resetCamera()">카메라 리셋</button>
+            <button class="btn-debug" onclick="toggleDebugMode()" style="background: linear-gradient(135deg, #ff0000 0%, #ff6b6b 100%);"> 물리 충돌 표시 (ON)</button>
+            <!-- 🚨 [디버그 로그 버튼 주석 처리] -->
+            <!-- <button class="btn-debug" onclick="toggleDebugLog()" style="background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);"> 디버그 로그 (OFF)</button> -->
+        </div>
+
+        <div id="info" class="info">✏️ 완벽한 2D 평면에서 메쉬를 절단하세요! (Matter.js 2D 물리 엔진)</div>
+
+        <!-- 🚨 [디버그 로그 컨테이너 주석 처리] -->
+        <!-- <div id="debugLog" style="position: fixed; top: 10px; right: 10px; width: 400px; max-height: 80vh; overflow-y: auto; background: rgba(0,0,0,0.9); color: #0f0; font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; padding: 10px; border-radius: 8px; z-index: 10000; display: none; line-height: 1.4;">
+            <div style="position: sticky; top: 0; background: rgba(0,0,0,0.95); padding: 5px 0; margin-bottom: 5px; border-bottom: 1px solid #0f0; display: flex; justify-content: space-between; align-items: center; gap: 5px;">
+                <strong style="color: #0ff;">🔍 디버그 로그</strong>
+                <div style="display: flex; gap: 5px;">
+                    <button id="pauseLogBtn" onclick="toggleDebugLogPause()" style="background: #ffaa00; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 10px;">⏸️ 일시정지</button>
+                    <button onclick="clearDebugLog()" style="background: #ff0000; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 10px;">🗑️ Clear</button>
+                </div>
+            </div>
+            <div id="debugLogContent"></div>
+        </div> -->
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">메쉬 조각</div>
+                <div class="stat-value" id="meshCount">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">총 정점</div>
+                <div class="stat-value" id="vertexCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">FPS</div>
+                <div class="stat-value" id="fpsCount">60</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">로딩 시간</div>
+                <div class="stat-value" id="loadTime">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 시간 측정 -->
+    <script>
+        const loadStartTime = performance.now();
+        console.log('🚀 Matter.js + Three.js 2D 버전 로딩 시작...');
+    </script>
+
+    <!-- Three.js 라이브러리 (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="console.error('Three.js 로드 실패:', this.src)"></script>
+    
+    <!-- OBJLoader (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js" onerror="console.error('OBJLoader 로드 실패:', this.src)"></script>
+    <!-- RGBELoader (HDRI 로더) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js" onerror="console.error('RGBELoader 로드 실패:', this.src)"></script>
+    
+    <!-- Matter.js 물리 엔진 (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" onerror="console.error('Matter.js 로드 실패:', this.src)"></script>
+    
+    <!-- 로딩 완료 -->
+    <script>
+        const loadEndTime = performance.now();
+        const loadTime = ((loadEndTime - loadStartTime) / 1000).toFixed(3);
+        console.log(`✅ 라이브러리 로드 완료: ${loadTime}초 (Matter.js 포함)`);
+        
+        // 통계에 로딩 시간 표시
+        window.addEventListener('DOMContentLoaded', () => {
+            const loadTimeElement = document.getElementById('loadTime');
+            if (loadTimeElement) {
+                loadTimeElement.textContent = loadTime + 's';
+            }
+        });
+    </script>
+    
+    <!-- 메인 스크립트 (Matter.js 버전) -->
+    <script src="Mesh_cutting_2D.js"></script>
+</body>
+</html>
+
