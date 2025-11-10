@@ -37,71 +37,71 @@ Three.js와 Matter.js를 사용한 2D 메쉬 절단 시스템입니다. 마우�
 ## 주요 함수
 
 ### 초기화
-- `init()` (142줄) - 애플리케이션 초기화 (씬, 카메라, 물리 엔진 설정)
-- `setupLights()` (234줄) - 조명 설정
-- `setupBackground()` (260줄) - 배경 이미지 설정
-- `setupPhysics()` (317줄) - Matter.js 물리 엔진 초기화
-- `createBoundaryWalls()` (358줄) - 경계 벽 생성
+- `init()` - 애플리케이션 초기화 (씬, 카메라, 물리 엔진 설정)
+- `setupLights()` - 조명 설정
+- `setupBackground()`  - 배경 이미지 설정
+- `setupPhysics()`  - Matter.js 물리 엔진 초기화
+- `createBoundaryWalls()` - 경계 벽 생성
 
 ### 도형 생성
-- `createMeshFromShape()` (1203줄) - Shape로부터 메쉬와 물리 바디 생성
-- `createLeafShape()` (456줄) - SVG Path 기반 나뭇잎 도형
-- `createTriangleShape()` (553줄), `createSquareShape()` (564줄), `createPentagonShape()` (576줄), `createCircleShape()` (591줄) - 기본 도형
-- `createHamShape()` (598줄) - 햄 OBJ 파일 로드 (prefab/wholer-ham.obj)
-- `processObjToShape()` (623줄) - OBJ를 2D Shape로 변환
-- `createShapeFromSVGPath()` (498줄) - SVG Path를 THREE.Shape로 변환
+- `createMeshFromShape()` - Shape로부터 메쉬와 물리 바디 생성
+- `createLeafShape()` - SVG Path 기반 나뭇잎 도형
+- `createTriangleShape()`, `createSquareShape()` (564줄), `createPentagonShape()` (576줄), `createCircleShape()` (591줄) - 기본 도형
+- `createHamShape()` - 햄 OBJ 파일 로드 (prefab/wholer-ham.obj)
+- `processObjToShape()` - OBJ를 2D Shape로 변환
+- `createShapeFromSVGPath()`- SVG Path를 THREE.Shape로 변환
 
 ### 절단 로직
-- `performCut(start, end)` (1766줄) - 절단선을 따라 메쉬 절단
-- `splitMeshSimple2D()` (1838줄) - 메쉬를 두 조각으로 분할
-- `createShapeFromVertices2D()` (2092줄) - 정점 배열로 Shape 생성
+- `performCut(start, end)` - 절단선을 따라 메쉬 절단
+- `splitMeshSimple2D()` - 메쉬를 두 조각으로 분할
+- `createShapeFromVertices2D()` - 정점 배열로 Shape 생성
 
 ### 물리 및 유틸리티
-- `applyCutForce()` (1159줄) - 절단된 조각에 힘 적용
-- `calculatePolygonArea()` (1055줄) - Shoelace 공식으로 면적 계산
-- `simplifyVertices()` (1096줄) - 정점 간소화 (성능 최적화)
-- `applyPhysicsProperties()` (1019줄) - 물리 속성 설정
+- `applyCutForce()` - 절단된 조각에 힘 적용
+- `calculatePolygonArea()` - Shoelace 공식으로 면적 계산
+- `simplifyVertices()` - 정점 간소화 (성능 최적화)
+- `applyPhysicsProperties()` - 물리 속성 설정
 
 ### 파티클 시스템
-- `createParticleEffect()` (2216줄) - 작은 조각을 파티클로 변환
-- `updateParticles()` (2275줄) - 파티클 애니메이션 업데이트
-- `isFragmentTooSmall()` (2166줄) - 조각 크기 확인
+- `createParticleEffect()` - 작은 조각을 파티클로 변환
+- `updateParticles()'- 파티클 애니메이션 업데이트
+- `isFragmentTooSmall()`- 조각 크기 확인
 
 ### 알고리즘
-- `computeConcaveHull()` (798줄) - 오목 껍질 알고리즘 (OBJ 외곽선 추출)
-- `computeConvexHull()` (941줄) - 볼록 껍질 알고리즘 (Graham's Scan)
-- `computeAverageNearestNeighborDistance()` (913줄) - 평균 최근접 이웃 거리 계산
+- `computeConcaveHull()` - 오목 껍질 알고리즘 (OBJ 외곽선 추출)
+- `computeConvexHull()` - 볼록 껍질 알고리즘 (Graham's Scan)
+- `computeAverageNearestNeighborDistance()` - 평균 최근접 이웃 거리 계산
 
 ### 디버그
-- `renderDebugPhysics()` (2324줄) - 물리 바디 시각화
-- `setupDebugLog()` (2382줄) - 화면 디버그 로그 설정
-- `toggleDebugMode()` (2494줄) - 디버그 모드 토글
-- `addDebugLogLine()` (2409줄) - 디버그 로그 라인 추가
-- `toggleDebugLog()` (2430줄) - 디버그 로그 토글
-- `clearDebugLog()` (2447줄) - 디버그 로그 지우기
-- `toggleDebugLogPause()` (2453줄) - 디버그 로그 일시정지/재개
+- `renderDebugPhysics()`- 물리 바디 시각화
+- `setupDebugLog()`- 화면 디버그 로그 설정
+- `toggleDebugMode()`  - 디버그 모드 토글
+- `addDebugLogLine()` - 디버그 로그 라인 추가
+- `toggleDebugLog()` - 디버그 로그 토글
+- `clearDebugLog()`- 디버그 로그 지우기
+- `toggleDebugLogPause()` - 디버그 로그 일시정지/재개
 
 ### 이벤트 핸들러
-- `setupEventListeners()` (1478줄) - 이벤트 리스너 설정
-- `onMouseDown()` (1522줄) - 마우스 다운 이벤트
-- `onMouseMove()` (1594줄) - 마우스 이동 이벤트
-- `onMouseUp()` (1683줄) - 마우스 업 이벤트
-- `onWheel()` (1499줄) - 마우스 휠 이벤트 (줌)
-- `onWindowResize()` (1715줄) - 윈도우 리사이즈 이벤트
-- `updateBoundaryWalls()` (1733줄) - 경계 벽 업데이트
+- `setupEventListeners()`  - 이벤트 리스너 설정
+- `onMouseDown()`  - 마우스 다운 이벤트
+- `onMouseMove() - 마우스 이동 이벤트
+- `onMouseUp()` - 마우스 업 이벤트
+- `onWheel()`  - 마우스 휠 이벤트 (줌)
+- `onWindowResize()` - 윈도우 리사이즈 이벤트
+- `updateBoundaryWalls()` - 경계 벽 업데이트
 
 ### UI
-- `loadSelectedShape()` (2527줄) - 선택된 도형 로드
-- `resetScene()` (2581줄) - 씬 초기화
-- `clearAllMeshes()` (2599줄) - 모든 메쉬 제거
-- `updateStats()` (2687줄) - 통계 업데이트
-- `toggleWireframe()` (2642줄) - 와이어프레임 모드
-- `resetCamera()` (2667줄) - 카메라 리셋
-- `updateVertexQuality()` (2615줄) - 물리 정점 품질 변경
-- `getRandomColor()` (2144줄) - 랜덤 색상 생성
+- `loadSelectedShape()`  - 선택된 도형 로드
+- `resetScene()`  - 씬 초기화
+- `clearAllMeshes()`  - 모든 메쉬 제거
+- `updateStats()`  - 통계 업데이트
+- `toggleWireframe()` - 와이어프레임 모드
+- `resetCamera()`  - 카메라 리셋
+- `updateVertexQuality()`  - 물리 정점 품질 변경
+- `getRandomColor()`  - 랜덤 색상 생성
 
 ### 애니메이션
-- `animate()` (2713줄) - 메인 애니메이션 루프 (60fps)
+- `animate()`  - 메인 애니메이션 루프 (60fps)
 
 ## 주요 변수
 
